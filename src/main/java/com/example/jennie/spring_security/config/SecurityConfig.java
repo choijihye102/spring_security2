@@ -52,7 +52,7 @@ public class SecurityConfig {
         UserDetails admin = User.withDefaultPasswordEncoder()
                 .username("admin")
                 .password("password")
-                .roles("ADMIN")
+                .roles("ADMIN","USER")
                 .build();
 
         return new InMemoryUserDetailsManager(user, admin);
