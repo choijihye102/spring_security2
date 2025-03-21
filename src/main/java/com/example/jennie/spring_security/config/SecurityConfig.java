@@ -1,5 +1,6 @@
 package com.example.jennie.spring_security.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -17,21 +18,30 @@ import javax.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    //SecurityFilterChain :  시큐리티에서 적용할 보안규칙들을 필터로 구현해놓음
+    private final UserDetailsService userDetailsService;
 
+    //SecurityFilterChain :  시큐리티에서 적용할 보안규칙들을 필터로 구현해놓음
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
              http
-                     .csrf().disable() // CSRF 필터 끔
-                .authorizeRequests() // URL 기반 인가 설정
+                 .csrf().disable() // CSRF 필터 끔
+                 .userDetailsService(userDetailsService)
+                 .authorizeRequests() // URL 기반 인가 설정
                     .antMatchers("/user/**").hasRole("USER")  // USER 권한 사용자만 접근 가능
                     .antMatchers("/admin/**").hasRole("ADMIN")
                     .antMatchers("/logout").authenticated() // 인증받은 사용자만 접근 가능
                     .antMatchers("/**").permitAll() // 인증/인가 여부와 상관없이 접근 가능
                      .and()
                  .formLogin()
+                     .loginProcessingUrl("/api/login")  // 로그인 처리 URL
+                     .usernameParameter("userid")   // 아이디 매개변수 지정
+                     .passwordParameter("passwd")   // 비밀번호 매개변수 지정
+                     .defaultSuccessUrl("/")    // 로그인 성공시 리다이렉트 URL
+                     .failureUrl("/login?error=true")    // 로그인 실패시 리다이렉트 URL
+                     .permitAll()
                      .and()
                  .logout()// 로그아웃 설정
                      .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
@@ -48,21 +58,4 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
-        UserDetails user = User.builder()
-                .username("user")
-                .password(passwordEncoder.encode("password"))
-                .roles("USER")
-                .build();
-
-        UserDetails admin = User.withDefaultPasswordEncoder()
-                .username("admin")
-                .password(passwordEncoder.encode("password"))
-                //.roles("ADMIN","USER")
-                .roles("ADMIN") // ADMIN 권한 가짐
-                .build();
-
-        return new InMemoryUserDetailsManager(user, admin);
-    }
 }
