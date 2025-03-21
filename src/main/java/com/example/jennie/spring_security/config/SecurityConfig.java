@@ -7,6 +7,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
@@ -17,6 +18,8 @@ import javax.servlet.http.HttpServletResponse;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    //SecurityFilterChain :  시큐리티에서 적용할 보안규칙들을 필터로 구현해놓음
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -42,17 +45,23 @@ public class SecurityConfig {
     }
 
     @Bean
-    public UserDetailsService userDetailsService() {
-        UserDetails user = User.withDefaultPasswordEncoder()
+    public PasswordEncoder passwordEncoder(){   // 비밀번호 암호화에 사용할 인코더
+        return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
+        UserDetails user = User.builder()
                 .username("user")
-                .password("password")
+                .password(passwordEncoder.encode("password"))
                 .roles("USER")
                 .build();
 
         UserDetails admin = User.withDefaultPasswordEncoder()
                 .username("admin")
-                .password("password")
-                .roles("ADMIN","USER")
+                .password(passwordEncoder.encode("password"))
+                //.roles("ADMIN","USER")
+                .roles("ADMIN") // ADMIN 권한 가짐
                 .build();
 
         return new InMemoryUserDetailsManager(user, admin);
