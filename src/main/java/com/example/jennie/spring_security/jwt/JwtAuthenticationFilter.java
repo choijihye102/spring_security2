@@ -25,7 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
 
     // 클라이언트롭터 http 요청이 들어오면 필터체인에 등록된
-    // JwtAuthenticationFilter의 doFilterInternal메소드가 호출.
+    // JwtAuthenticationFilter의 doFilterInternal 메소드가 호출.
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain fc)
             throws ServletException, IOException {
